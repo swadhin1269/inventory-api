@@ -66,4 +66,4 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal Server Error' });
 });
 
-app.listen(PORT, () => console.log(`Inventory API listening on ${PORT}`));
+app.listen(PORT, () => console.log(`Inventory server is running on: http://localhost:${PORT}`));
