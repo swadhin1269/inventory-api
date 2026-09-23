@@ -1,0 +1,25 @@
+name: "practice github action"
+
+on:
+    push:
+        branches:
+            master
+
+jobs:
+    linux-command:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Run Linux commands
+              run: |
+                pwd
+                ls
+    
+    system-info:
+        needs: linux-command
+        runs-on: ubuntu-latest
+        steps:
+            - name: Show syatem info
+              run: |
+                whoami
+                hostname
+                uname -a
