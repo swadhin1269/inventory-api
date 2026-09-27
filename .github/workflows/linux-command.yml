@@ -1,40 +1,35 @@
-name: Module 6
+name: CI Workflow
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to run the workflow in'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
 
-env:
-  APP_NAME: inventory-api
+      version:
+        description: 'Version for the deployment'
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version_exposer.outputs.version }}
 
-    outputs: 
-      version: ${{ steps.build_info.outputs.version }}
-    
     steps:
-      - name: Build section
-        id: build_info
-        run: |
-          echo "Application name: ${{ env.APP_NAME }}"
-          echo "Repository name: ${{ github.repository }}"
-          echo "Current Branch: ${{ github.ref }}"
-          echo "OS: ${{ runner.os }}"
-          echo "version=1.0.0" >> "$GITHUB_OUTPUT"
+      - name: Version exposer
+        id: version_exposer
+        run: echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
 
   deploy:
     needs: build
-    if: ${{ github.ref == 'refs/heads/master' && vars.APP_ENV == 'production' }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Deploy section
-        run: |
-          echo "Application: ${{ env.APP_NAME }}"
-          echo "Environment: ${{ vars.APP_ENV }}"
-          echo "Version: ${{ needs.build.outputs.version }}"
-          echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref }}"
-          echo "Runner OS: ${{ runner.os }}"
-          echo "Name: ${{ github.ref_name }}"  
+      - name: Deploy to ${{ inputs.environment }}
+        run: echo "Deploying version ${{ needs.build.outputs.version }} to ${{ inputs.environment }}"
