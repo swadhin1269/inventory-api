@@ -1,25 +1,40 @@
-name: "practice github action"
+name: Module 6
 
 on:
-    push:
-        branches:
-            master
+  workflow_dispatch:
+
+env:
+  APP_NAME: inventory-api
 
 jobs:
-    linux-command:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Run Linux commands
-              run: |
-                pwd
-                ls
+  build:
+    runs-on: ubuntu-latest
+
+    outputs: 
+      version: ${{ steps.build_info.outputs.version }}
     
-    system-info:
-        needs: linux-command
-        runs-on: ubuntu-latest
-        steps:
-            - name: Show syatem info
-              run: |
-                whoami
-                hostname
-                uname -a
+    steps:
+      - name: Build section
+        id: build_info
+        run: |
+          echo "Application name: ${{ env.APP_NAME }}"
+          echo "Repository name: ${{ github.repository }}"
+          echo "Current Branch: ${{ github.ref }}"
+          echo "OS: ${{ runner.os }}"
+          echo "version=1.0.0" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: build
+    if: ${{ github.ref == 'refs/heads/master' && vars.APP_ENV == 'production' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy section
+        run: |
+          echo "Application: ${{ env.APP_NAME }}"
+          echo "Environment: ${{ vars.APP_ENV }}"
+          echo "Version: ${{ needs.build.outputs.version }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Runner OS: ${{ runner.os }}"
+          echo "Name: ${{ github.ref_name }}"  
