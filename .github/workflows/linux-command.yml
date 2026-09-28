@@ -1,20 +1,49 @@
 name: 1-8 module practice
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - feature/linux-sys
+
+env:
+  APP_NAME: inventory-api
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    outputs:
+      version: ${{ steps.phase1.outputs.version }}
+
     steps:
       - name: Phase 1
-        run: echo "Building inventory-api..."
+        id: phase1
+        run: |
+          echo "Application: ${{ env.APP_NAME }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Runner OS #: ${{ runner.os }}"
+          echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          echo "Building inventory-api..."
 
   test:
     needs: build
+    if: ${{ github.ref_name == 'master' && vars.DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: phase 2
-        run: echo "Testing inventory-api..."
+        run: |
+          echo "Testing inventory-api version ${{ needs.build.outputs.version }}"
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_TOKEN: ${{ secrets.AWS_TOKEN }}
+
+    environment: production
+
+    steps:
+      - name: phase 3
+        run: |
+          echo "Deploying...."
