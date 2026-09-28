@@ -10,3 +10,11 @@ jobs:
     steps:
       - name: Phase 1
         run: echo "Building inventory-api..."
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: phase 2
+        run: echo "Testing inventory-api..."
