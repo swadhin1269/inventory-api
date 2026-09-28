@@ -1,35 +1,12 @@
-name: CI Workflow
+name: 1-8 module practice
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to run the workflow in'
-        required: true
-        type: choice
-        options:
-          - staging
-          - production
-
-      version:
-        description: 'Version for the deployment'
-        required: true
-        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version_exposer.outputs.version }}
 
     steps:
-      - name: Version exposer
-        id: version_exposer
-        run: echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to ${{ inputs.environment }}
-        run: echo "Deploying version ${{ needs.build.outputs.version }} to ${{ inputs.environment }}"
+      - name: Phase 1
+        run: echo "Building inventory-api..."
