@@ -1,35 +1,48 @@
-name: CI Workflow
+name: 1-8 module practice
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to run the workflow in'
-        required: true
-        type: choice
-        options:
-          - staging
-          - production
+  push:
+    branches:
+      - feature/linux-sys
 
-      version:
-        description: 'Version for the deployment'
-        required: true
-        type: string
+env:
+  APP_NAME: inventory-api
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     outputs:
-      version: ${{ steps.version_exposer.outputs.version }}
+      version: ${{ steps.phase1.outputs.version }}
 
     steps:
-      - name: Version exposer
-        id: version_exposer
-        run: echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+      - name: Phase 1
+        id: phase1
+        run: |
+          echo "Application: ${{ env.APP_NAME }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Runner OS #: ${{ runner.os }}"
+          echo "Building inventory-api..."
+
+  test:
+    needs: build
+    if: ${{ github.ref_name == 'master' && vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: phase 2
+        run: |
+          echo "Testing inventory-api version: 2.5.0"
 
   deploy:
-    needs: build
     runs-on: ubuntu-latest
+
+    env:
+      AWS_TOKEN: ${{ secrets.AWS_TOKEN }}
+
+    environment: production
+
     steps:
-      - name: Deploy to ${{ inputs.environment }}
-        run: echo "Deploying version ${{ needs.build.outputs.version }} to ${{ inputs.environment }}"
+      - name: phase 3
+        run: |
+          echo "Deploying...."
