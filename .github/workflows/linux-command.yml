@@ -28,6 +28,24 @@ jobs:
       - name: Upload to Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: inventory-api
+          name: inventory-build
           path: dist/
-      
+  
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: inventory-build
+          path: dist/
+
+      - name: File check
+        if: ${{ success() }}
+        run: ls -la dist/
+
+      - name: If failure
+        if: ${{ failure() }}
+        run: echo "An earlier step in the deploy job failed.""
