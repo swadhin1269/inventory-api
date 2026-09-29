@@ -35,7 +35,13 @@ jobs:
           echo "Testing inventory-api version: 2.5.0"
 
   deploy:
-    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        node: [20, 22]
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     env:
       AWS_TOKEN: ${{ secrets.AWS_TOKEN }}
@@ -43,6 +49,12 @@ jobs:
     environment: production
 
     steps:
-      - name: phase 3
+      - name: Node versions check
         run: |
-          echo "Deploying...."
+          echo "node version: ${{ matrix.node }}"
+          echo "os: ${{ runner.os }}"
+
+      - name: Deploy to AWS
+        if: ${{ matrix.node == 22 }}
+        run: |
+          echo "Deploying inventory-api version: ${{ needs.build.outputs.version }} to AWS"
