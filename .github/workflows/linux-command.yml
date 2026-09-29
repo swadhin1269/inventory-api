@@ -1,49 +1,33 @@
-name: 1-8 module practice
+name: node deployment
 
 on:
   push:
     branches:
-      - feature/linux-sys
-
-env:
-  APP_NAME: inventory-api
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    outputs:
-      version: ${{ steps.phase1.outputs.version }}
-
     steps:
-      - name: Phase 1
-        id: phase1
-        run: |
-          echo "Application: ${{ env.APP_NAME }}"
-          echo "Repository: ${{ github.repository }}"
-          echo "Runner OS #: ${{ runner.os }}"
-          echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
-          echo "Building inventory-api..."
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  test:
-    needs: build
-    if: ${{ github.ref_name == 'master' && vars.DEPLOY_ENABLED == 'true' }}
-    runs-on: ubuntu-latest
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
 
-    steps:
-      - name: phase 2
-        run: |
-          echo "Testing inventory-api version ${{ needs.build.outputs.version }}"
+      - name: Install Dependencies
+        run: npm ci
 
-  deploy:
-    runs-on: ubuntu-latest
+      - name: Build
+        run: npm run build
 
-    env:
-      AWS_TOKEN: ${{ secrets.AWS_TOKEN }}
-
-    environment: production
-
-    steps:
-      - name: phase 3
-        run: |
-          echo "Deploying...."
+      - name: Upload to Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: inventory-api
+          path: dist/
+      
