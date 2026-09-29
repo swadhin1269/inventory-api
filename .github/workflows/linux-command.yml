@@ -30,9 +30,28 @@ jobs:
         with:
           name: inventory-build
           path: dist/
-  
-  deploy:
+  test:
     needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: node test.js
+
+  deploy:
+    needs: [build, test]
     runs-on: ubuntu-latest
 
     steps:
@@ -45,7 +64,3 @@ jobs:
       - name: File check
         if: ${{ success() }}
         run: ls -la dist/
-
-      - name: If failure
-        if: ${{ failure() }}
-        run: echo "An earlier step in the deploy job failed.""

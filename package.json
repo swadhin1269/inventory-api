@@ -4,6 +4,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "test": "node test.js",
     "build": "mkdir -p dist && cp server.js dist/server.js"
   },
   "dependencies": {
