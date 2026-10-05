@@ -1,0 +1,63 @@
+name: quality check workflow
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Build Job
+              run: |
+                echo "Building..."
+                echo "Build Completed."
+
+    test:
+        needs: build
+        runs-on: ubuntu-latest
+
+        steps: 
+            - name: Test Job
+              run: |
+                echo "Running Test Cases..."
+                echo "Test Completed."
+
+    quality: 
+        needs: [build, test]
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checking Quality Gate
+              run: |
+                echo "checking quality gate...(SonarQube, ESLint, etc.)"
+                echo "Quality Gate Passed."
+
+            - name: Security Scan
+              run: |
+                echo "Running Security Scan...(Snyk, OWASP, etc.)"
+                echo "Security Scan Failed. Exiting..."
+                exit 1
+
+            - name: Test Code Coverage
+              run: |
+                echo "Running Code Coverage...(Istanbul, Coveralls, etc.)"
+                echo "Code Coverage Completed."
+
+            - name: Dependency Vulnerability Check
+              run: |
+                echo "Checking for Dependency Vulnerabilities...(npm audit, etc.)"
+                echo "Dependency Vulnerability Check Completed."
+
+    deploy:
+        needs: [build, test, quality]
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Deploy Job
+              run: |
+                echo "Deploying Application..."
+                echo "Deployment Completed."
+
