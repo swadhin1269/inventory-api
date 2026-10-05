@@ -1,69 +1,71 @@
-name: quality check workflow
+name: "complete ci/cd workflow"
 
 on:
-    push:
-        branches:
-            - master
+  push:
+    branches:
+      - master
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Build Job
-              run: |
-                echo "Building..."
-                echo "Build Completed."
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build project
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Build
+          path: dist/
 
-    test:
-        runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm run test
 
-        steps: 
-            - name: Test Job
-              run: |
-                echo "Running Test Cases..."
-                echo "Test Completed."
+  quality:
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Quality Check
+        run: echo "Running quality checks..."
+      - name: Lint Check
+        run: echo "Running lint checks..."
+      - name: Security Check
+        run: echo "Running security checks..."
+      - name: Dependency Check
+        if: ${{ always() }}
+        run: echo "Running dependency checks..."
+      - name: Code Coverage Check
+        if: ${{ always() }}
+        run: echo "Running code coverage checks..."
+      - name: Failure Check
+        if: ${{ failure() }}
+        run: echo "One or more checks failed. Please review the logs for details."
 
-    quality: 
-        needs: [build, test]
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checking Quality Gate
-              run: |
-                echo "checking quality gate...(SonarQube, ESLint, etc.)"
-                echo "Quality Gate Passed."
-
-            - name: Security Scan
-              run: |
-                echo "Running Security Scan...(Snyk, OWASP, etc.)"
-                echo "Security Scan Failed. Exiting..."
-                exit 1
-
-            - name: Test Code Coverage
-              if: ${{ always() }}
-              run: |
-                echo "Running Code Coverage...(Istanbul, Coveralls, etc.)"
-                echo "Code Coverage Completed."
-
-            - name: Dependency Vulnerability Check
-              if: ${{ always() }}
-              run: |
-                echo "Checking for Dependency Vulnerabilities...(npm audit, etc.)"
-                echo "Dependency Vulnerability Check Completed."
-
-            - name: Failure Report
-              if: ${{ failure() }}
-              run: |
-                echo "Failed. Generating Report..."
-                echo "Report Generated."
-
-    deploy:
-        needs: [build, test, quality]
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Deploy Job
-              run: |
-                echo "Deploying Application..."
-                echo "Deployment Completed."
-
+  deploy:
+    needs: [build, test, quality]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Build
+          path: dist/
+      - name: Deploy
+        run: ls -la dist/
