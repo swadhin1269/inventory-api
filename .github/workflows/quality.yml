@@ -47,7 +47,9 @@ jobs:
       - name: Lint Check
         run: echo "Running lint checks..."
       - name: Security Check
-        run: echo "Running security checks..."
+        run: |
+          echo "Running security checks..."
+          exit 1 # Simulating a failure for demonstration purposes
       - name: Dependency Check
         if: ${{ always() }}
         run: echo "Running dependency checks..."
